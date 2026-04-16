@@ -7,7 +7,6 @@
     TODO:
     -poprawic komentarze
     -optymalizacja
-    -byc moze zmiana metody
     -sprawdzenie poprawnosci
 */
 
@@ -22,7 +21,7 @@ int matrix_cpy(Matrix *dest, Matrix *source){
     if(!dest || !source)
         return -1;
     for(int i=0;i<dest->size * dest->size; i++)
-        source->data[i] = dest->data[i];
+        dest->data[i] = source->data[i];
     return 0;
 }
 
@@ -71,7 +70,7 @@ void free_matrix(Matrix *M){
 
 void free_vec(Vector *V){
     free(V->data);
-    fre(V);
+    free(V);
 }
 
 Vector* create_degree_vector(Matrix *M){
@@ -85,7 +84,7 @@ Vector* create_degree_vector(Matrix *M){
     return degree_vector;
 }
 
-void adjacency_to_laplacian_matrix(Matrix* adj_matrix, Vector* deg_matrix){    //no new matrix in order to save memorhelp_vec and time
+void adjacency_to_laplacian_matrix(Matrix* adj_matrix, Vector* deg_matrix){    
 
     for(int i=0;i<adj_matrix->size;i++){
         for(int j=0;j<adj_matrix->size;j++){
@@ -98,8 +97,10 @@ void adjacency_to_laplacian_matrix(Matrix* adj_matrix, Vector* deg_matrix){    /
 }
 //LU matrix -> A = L * U
 //in order to save memory, L and U matrix are stored in A matrix
-void LU_decompose(Matrix *A, int *P){    //implementation of Gaussian  elimination in order to get LU matrix
+void LU_decompose(Matrix *A, int *P){    //implementation of Gaussian elimination in order to get LU matrix
     double *tmp_row = malloc(sizeof(double) * A->size);
+    if(!tmp_row)
+	    return;
     //searching for max_row in order to minimalize rounding errors
     for(int k=0; k<A->size; k++){
         int max_row = k;
@@ -127,6 +128,7 @@ void LU_decompose(Matrix *A, int *P){    //implementation of Gaussian  eliminati
                 MAT(A,i,j) -= factor * MAT(A,k,j);
         }
     }
+    free(tmp_row);
 }
 
 

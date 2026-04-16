@@ -3,18 +3,18 @@
 #include "log.h"
 #define ITERATIONS 1000
 
-int power_iteration(Matrix *A,  Matrix *matrix, Vector *P,
+int power_iteration(Matrix *A,  Matrix *matrix, int *P,
                     Vector *help_vec, Vector *ones, Vector *Lap_w,
                     Vector **nxt, Vector **cur, Vector *v2,
                     double *lambda, double *lambda_prev
                     ){
-    if(LU_solve(A, P, cur, nxt, help_vec)==-1){
+    if(LU_solve(A, P, *cur, *nxt, help_vec)==-1){
         return -1;
     }
-    vector_orthagonalization(nxt,ones);  //delete component v1
+    vector_orthagonalization(*nxt,ones);  //delete component v1
     if(v2)
-        vector_orthagonalization(nxt,v2);  //delete component v2 if present
-    if(vector_normalize(nxt)==-1){
+        vector_orthagonalization(*nxt,v2);  //delete component v2 if present
+    if(vector_normalize(*nxt)==-1){
         return -1;
     }
         
@@ -25,7 +25,7 @@ int power_iteration(Matrix *A,  Matrix *matrix, Vector *P,
         for(int k=0;k<matrix->size;k++)
             VEC(Lap_w,j) += MAT(matrix,j,k) * VEC(*nxt,k);
     }
-    *lambda = scalar_product(nxt, Lap_w);
+    *lambda = scalar_product(*nxt, Lap_w);
         
     if(is_zero(*lambda-*lambda_prev)){
         Vector *tmp = *cur;
@@ -115,7 +115,7 @@ int reverse_power_iterations(Matrix *matrix, pkt *punkty){
     prepare_current_vector(A,matrix,P,cur2,ones,NULL,0);
 
     for(int i=0;i<ITERATIONS;i++){
-        iteration_exit_value = power_iteration(A, matrix, P, help_vec, ones, Lap_w, &nxt2, &cur2, NULL, &lambda2, &lambda2_prev);
+        iteration_exit_value = power_iteration(A,matrix,P,help_vec,ones,Lap_w,&nxt2,&cur2,NULL,&lambda2,&lambda2_prev);
         if(iteration_exit_value==-1){
             clear_memory(A,P,cur2,nxt2,cur3,nxt3,ones,help_vec,Lap_w);
             return -1;
@@ -144,9 +144,10 @@ int reverse_power_iterations(Matrix *matrix, pkt *punkty){
     Vector *v3 = cur3;
     //x and y coordinates - P(x[i],y[i]) is point of i-vertex
     //copy coordinates
-    for(int i=0; i<matrix->size; i++){
+    for(int i=0; i<v2->size; i++){	//zmiana matrix->size na v2->size
         punkty[i].x = VEC(v2,i);
         punkty[i].y = VEC(v3,i);
+	punkty[i].n = i+1;
     }
     clear_memory(A,P,cur2,nxt2,cur3,nxt3,ones,help_vec,Lap_w);
     if(converged2==0 || converged3==0)
@@ -154,24 +155,28 @@ int reverse_power_iterations(Matrix *matrix, pkt *punkty){
     return 0;
 }
 
-int SpectralLayoutAlgorithm(graf g, pkt *punkty){
-
-    Matrix *M = create_adjacency_matrix(g);
+int SpectralLayoutAlgorithm(graf *g){
+    verbose("Creating adjacency matrix.\n");
+    Matrix *M = create_adjacency_matrix(*g);
+    verbose("Creating degree vector.\n");
     Vector *V = create_degree_vector(M);
+    verbose("Creating laplacian matrix.\n");
     adjacency_to_laplacian_matrix(M,V);
-    int exit_code = reverse_power_iterations(M,punkty);
+    verbose("Executing reverse power iterations.\n");
+    int exit_code = reverse_power_iterations(M,g->punkty);
+    verbose("Freeing adjacency matrix and degree vector memory.\n");
     free_matrix(M);
     free_vec(V);
     if(exit_code==0){
-        verbose("Spectral layout algorithm .\n");
+        verbose("Spectral layout algorithm finished succesfully.\n");
         return 0;
     }
     else if(exit_code==1){
-        fprintf(stderr, "Spectral layout did not converge. Results may be inacurate.\n");
+        verbose("Spectral layout did not converge. Results may be inacurate.\n");
         return 1;
     }
     else{
-        fprintf(stderr, "Error in reverse_power_iterations function.\n");
+        verbose("Error in reverse_power_iterations function.\n");
         return -1;
     }
 }

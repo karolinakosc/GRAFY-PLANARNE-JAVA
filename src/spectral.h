@@ -2,5 +2,5 @@
 #define _SPECTRAL_H_
 #include "matrix_operations.h"
 #include "graf.h"
-int SpectralLayoutAlgorithm(graf g);
+int SpectralLayoutAlgorithm(graf *g);
 #endif

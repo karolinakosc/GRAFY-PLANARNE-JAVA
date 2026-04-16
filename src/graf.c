@@ -18,6 +18,8 @@ graf* create_graf (){
     g->linki = NULL; 
     g->l_pkt = 0; 
     g->l_l = 0; 
+    g->l_pkt_capacity = 8;
+    g->l_l_capacity = 8;
     
     return g; 
 } 
@@ -93,13 +95,16 @@ int find_pkt(graf* g, int n) {
 
 int add_link(graf* g, const char* name, int a, int b, double waga) {
     if(!g) return -1;
-    link* l = realloc(g->linki, (g->l_l + 1) * sizeof(link));
-    if (!l) {
+    if(g->l_l >= g->l_l_capacity) {
+      link *l = realloc(g->linki, 2 * g->l_l_capacity * sizeof(link));
+      if (!l) {
         fprintf(stderr, "Blad alokacji linki\n");
         return -1;
+      }
+      g->linki = l;
+      g->l_l_capacity *= 2;
     }
 
-    g->linki = l;
     g->linki[g->l_l] = (link){ .a = a, .b = b, .waga = waga };
     strncpy(g->linki[g->l_l].name, name, 49);
     g->linki[g->l_l].name[49] = '\0';
@@ -110,14 +115,17 @@ int add_link(graf* g, const char* name, int a, int b, double waga) {
 
 int add_pkt(graf* g, int n) {
     if(!g) return -1;
-    pkt* p = realloc(g->punkty, (g->l_pkt + 1) * sizeof(pkt));
-    if (!p) {
+    if(g->l_pkt >= g->l_pkt_capacity){
+      pkt* p = realloc(g->punkty, 2 * g->l_pkt_capacity * sizeof(pkt));
+      if (!p) {
         fprintf(stderr, "Blad alokacji punktu\n");
         return -1;
+      }
+      g->punkty = p;
+      g->l_pkt_capacity *= 2;
     }
-
-    g->punkty = p;
     g->punkty[g->l_pkt] = (pkt){0, 0, 0, 0, n}; 
+
     g->l_pkt++; 
     return 0;
 }
