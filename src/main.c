@@ -36,6 +36,7 @@ int main(int argc, char** argv)
   //zapisywanie wyniku
   //do zrobienia
   
+  free_graf(g);
   if(out) fclose(out);
   return 0;
 }
