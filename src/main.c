@@ -7,13 +7,7 @@
 #include "pob_dane.h"
 #include "graf.h"
 #include "spectral.h"
-
-int output(graf *g, FILE *out){
-	for(int i=0; i<g->l_pkt; i++)
-		if(fprintf(out,"%d:  %lf  %lf\n",g->punkty[i].n, g->punkty[i].x, g->punkty[i].y)!=3)
-			return -1;
-	return 0;
-}
+#include "planar.h"
 
 int main(int argc, char** argv)
 {
@@ -30,10 +24,12 @@ int main(int argc, char** argv)
         help();
         return 2;
   }
-  if (strcmp(a,"spectral") && SpectralLayoutAlgorithm(g)!=-1) {
-	  if(!output(g,out))
-		  fprintf(stderr,"Blad wypisywania grafu.\n");
-  }
+  if(checkPlanar(g)==-1)
+    fprintf(stderr,"Graf nie jest planarny.\n");
+  if (strcmp(a,"spectral") == 0)
+    if(SpectralLayoutAlgorithm(g)!=-1) {
+      printf("TEST algorytm zakonczony pomyslnie\n");
+    }
 
   //wlaczanie funkcji posrednich
   //do zrobienia

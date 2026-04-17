@@ -18,8 +18,18 @@ graf* create_graf (){
     g->linki = NULL; 
     g->l_pkt = 0; 
     g->l_l = 0; 
-    g->l_pkt_capacity = 8;
-    g->l_l_capacity = 8;
+    g->l_pkt_capacity = 1;
+    g->l_l_capacity = 1;
+    g->punkty = malloc(g->l_pkt_capacity * sizeof(pkt));
+    g->linki  = malloc(g->l_l_capacity * sizeof(link));
+
+    if (!g->punkty || !g->linki) {
+        fprintf(stderr, "Blad alokacji tablic grafu.\n");
+        free(g->punkty);
+        free(g->linki);
+        free(g);
+        return NULL;
+    }
     
     return g; 
 } 

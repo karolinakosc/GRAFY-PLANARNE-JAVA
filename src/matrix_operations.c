@@ -10,11 +10,11 @@
     -sprawdzenie poprawnosci
 */
 
-int get_max_vertex(graf g){
-    int max_vert = -1;
-    for(int i=0; i<g.l_pkt; i++)
-        max_vert = MAX(MAX(g.linki[i].a, g.linki[i].b), max_vert);
-    return max_vert;
+int find_index(graf *g, int vertex){
+  for(int i=0;i<g->l_pkt;i++)
+    if(g->punkty[i].n == vertex)
+      return i;
+  return -1;
 }
 
 int matrix_cpy(Matrix *dest, Matrix *source){
@@ -51,12 +51,16 @@ Vector *allocate_vector(int size){
     return V;
 }
 
-Matrix *create_adjacency_matrix(graf g){
-    int size = get_max_vertex(g)+1;
+Matrix *create_adjacency_matrix(graf *g){
+    int size = g->l_pkt;
     Matrix *adj = allocate_matrix(size);
-    for(int i=0; i<g.l_l; i++){
-        int a=g.linki[i].a;
-        int b=g.linki[i].b;
+    if(!adj){
+      fprintf(stderr,"Error while allocating adjacency matrix\n");
+      return NULL;
+    }
+    for(int i=0; i<g->l_l; i++){
+        int a=find_index(g, g->linki[i].a);
+        int b=find_index(g, g->linki[i].b);
         MAT(adj,a,b) = 1.0;
         MAT(adj,b,a) = 1.0;
     }
@@ -77,8 +81,10 @@ Vector* create_degree_vector(Matrix *M){
     Vector *degree_vector = allocate_vector(M->size);
     for(int i=0;i<M->size;i++){
         for(int j=0;j<M->size;j++){
-            if(MAT(M,i,j)==1)
-                VEC(degree_vector,i)++;
+           // if(MAT(M,i,j)==1)
+             //   VEC(degree_vector,i)++;
+             //   dziwna zmiana test
+            VEC(degree_vector,i) +=MAT(M,i,j);  //to dodane zamias 2 pprzednihc linijek
         }
     }
     return degree_vector;
@@ -119,8 +125,9 @@ void LU_decompose(Matrix *A, int *P){    //implementation of Gaussian eliminatio
             }
 
         }
-        if(is_zero(MAT(A,k,k)))               //check if A[k][k] ~ 0
+        if(is_zero(MAT(A,k,k))){               //check if A[k][k] ~ 0
             continue;
+        }
         for(int i=k+1; i<A->size; i++){            //Gaussian elimination - building LU matrix
             double factor = MAT(A,i,k) / MAT(A,k,k);  //A[i][k] elimination factor
             MAT(A,i,k) = factor;                   //to have L and U in one matrix store factor in eliminated position                  
