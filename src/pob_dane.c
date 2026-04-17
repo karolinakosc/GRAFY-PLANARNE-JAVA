@@ -3,7 +3,7 @@
 #include <string.h>
 #include "pob_dane.h"
 #include "log.h"
-char *algorithms[]={"spectral","triangulacja"};
+char *algorithms[]={"spectral","triangulacja", NULL};
 
 void help(){
   printf("Uruchomienie programu: ./graf <plik_wejściowy> [flagi]\n");
@@ -14,7 +14,7 @@ void help(){
 
 int find_algorithm(char *a){
   char **iter=algorithms;
-  while(iter)
+  while(*iter)
     if(strcmp(a,*iter++)==0)
       return 0;
   return 1;

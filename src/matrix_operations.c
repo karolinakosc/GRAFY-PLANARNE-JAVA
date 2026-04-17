@@ -61,8 +61,14 @@ Matrix *create_adjacency_matrix(graf *g){
     for(int i=0; i<g->l_l; i++){
         int a=find_index(g, g->linki[i].a);
         int b=find_index(g, g->linki[i].b);
-        MAT(adj,a,b) = 1.0;
-        MAT(adj,b,a) = 1.0;
+        if(a==-1 || b==-1){
+          fprintf(stderr,"Vertex not found.\n");
+          return NULL;
+        }
+        double weight = g->linki[i].waga;
+        printf("DEBUG: edge %d-%d waga=%lf\n",a,b,weight);
+        MAT(adj,a,b) = weight; //zmiana z sasiedztwa na wage
+        MAT(adj,b,a) = weight;
     }
     return adj;
 }
@@ -81,10 +87,7 @@ Vector* create_degree_vector(Matrix *M){
     Vector *degree_vector = allocate_vector(M->size);
     for(int i=0;i<M->size;i++){
         for(int j=0;j<M->size;j++){
-           // if(MAT(M,i,j)==1)
-             //   VEC(degree_vector,i)++;
-             //   dziwna zmiana test
-            VEC(degree_vector,i) +=MAT(M,i,j);  //to dodane zamias 2 pprzednihc linijek
+          VEC(degree_vector,i) +=MAT(M,i,j);
         }
     }
     return degree_vector;
@@ -96,8 +99,8 @@ void adjacency_to_laplacian_matrix(Matrix* adj_matrix, Vector* deg_matrix){
         for(int j=0;j<adj_matrix->size;j++){
             if(i==j)
                 MAT(adj_matrix,i,j) += VEC(deg_matrix,i);
-            else if(MAT(adj_matrix,i,j) == 1.0)
-                MAT(adj_matrix,i,j) = -1.0;
+            else if(MAT(adj_matrix,i,j) != 0.0)
+                MAT(adj_matrix,i,j) = -MAT(adj_matrix,i,j);
         }
     }
 }
