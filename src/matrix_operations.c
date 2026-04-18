@@ -66,8 +66,7 @@ Matrix *create_adjacency_matrix(graf *g){
           return NULL;
         }
         double weight = g->linki[i].waga;
-        printf("DEBUG: edge %d-%d waga=%lf\n",a,b,weight);
-        MAT(adj,a,b) = weight; //zmiana z sasiedztwa na wage
+        MAT(adj,a,b) = weight;
         MAT(adj,b,a) = weight;
     }
     return adj;
