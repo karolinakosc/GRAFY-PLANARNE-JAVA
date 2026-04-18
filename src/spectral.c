@@ -1,22 +1,27 @@
 #include "spectral.h"
+#include "math.h"
 #include "utlis.h"
 #include "log.h"
 #define ITERATIONS 1000
 
-int power_iteration(Matrix *A,  Matrix *matrix, Vector *P,
+#include <math.h>
+
+int power_iteration(Matrix *A,  Matrix *matrix, int *P,
                     Vector *help_vec, Vector *ones, Vector *Lap_w,
                     Vector **nxt, Vector **cur, Vector *v2,
                     double *lambda, double *lambda_prev
                     ){
-    if(LU_solve(A, P, cur, nxt, help_vec)==-1){
+    if(LU_solve(A, P, *cur, *nxt, help_vec)==-1){
         return -1;
     }
-    vector_orthagonalization(nxt,ones);  //delete component v1
+    vector_orthagonalization(*nxt,ones);  //delete component v1
     if(v2)
-        vector_orthagonalization(nxt,v2);  //delete component v2 if present
-    if(vector_normalize(nxt)==-1){
+      vector_orthagonalization(*nxt,v2);  //delete component v2 if present
+    if(vector_normalize(*nxt)==-1){
         return -1;
     }
+    for(int i=0;i<2;i++)
+      vector_orthagonalization(*nxt,ones);
         
     for(int j=0; j<matrix->size;j++){
         //lambda2 = w * (Lap * w)/(w * w)
@@ -25,7 +30,7 @@ int power_iteration(Matrix *A,  Matrix *matrix, Vector *P,
         for(int k=0;k<matrix->size;k++)
             VEC(Lap_w,j) += MAT(matrix,j,k) * VEC(*nxt,k);
     }
-    *lambda = scalar_product(nxt, Lap_w);
+    *lambda = scalar_product(*nxt, Lap_w);
         
     if(is_zero(*lambda-*lambda_prev)){
         Vector *tmp = *cur;
@@ -73,7 +78,7 @@ void prepare_current_vector(Matrix* A, Matrix *matrix, int *P, Vector *cur, Vect
     vector_normalize(cur);
 }
 
-int reverse_power_iterations(Matrix *matrix, pkt *punkty){
+int reverse_power_iterations(Matrix *matrix, graf *g){
     int iteration_exit_value = 0; //after each power_iteration exit code from said function is assigned (error detection)
     int converged2 = 0; //flag if v2 converged
     int converged3 = 0; //flag if v3 converged
@@ -115,7 +120,7 @@ int reverse_power_iterations(Matrix *matrix, pkt *punkty){
     prepare_current_vector(A,matrix,P,cur2,ones,NULL,0);
 
     for(int i=0;i<ITERATIONS;i++){
-        iteration_exit_value = power_iteration(A, matrix, P, help_vec, ones, Lap_w, &nxt2, &cur2, NULL, &lambda2, &lambda2_prev);
+        iteration_exit_value = power_iteration(A,matrix,P,help_vec,ones,Lap_w,&nxt2,&cur2,NULL,&lambda2,&lambda2_prev);
         if(iteration_exit_value==-1){
             clear_memory(A,P,cur2,nxt2,cur3,nxt3,ones,help_vec,Lap_w);
             return -1;
@@ -125,9 +130,11 @@ int reverse_power_iterations(Matrix *matrix, pkt *punkty){
             break;
         }
     }
+    Vector *v2 = allocate_vector(size);
+    for(int i=0;i<size;i++)
+      VEC(v2,i) = VEC(cur2,i);
 
-    Vector *v2 = cur2;
-
+//usuniecie v2
     prepare_current_vector(A,matrix,P,cur3,ones,v2,lambda2);
 
     for(int i=0;i<ITERATIONS;i++){
@@ -141,33 +148,43 @@ int reverse_power_iterations(Matrix *matrix, pkt *punkty){
             break;
         }
     }
-    Vector *v3 = cur3;
+    Vector *v3 = allocate_vector(size);
+
+    for(int i=0;i<size;i++)
+      VEC(v3,i) = VEC(cur3,i);
     //x and y coordinates - P(x[i],y[i]) is point of i-vertex
-    //copy coordinates
-    for(int i=0; i<matrix->size; i++){
-        punkty[i].x = VEC(v2,i);
-        punkty[i].y = VEC(v3,i);
+    for(int i=0; i<v2->size; i++){
+      g->punkty[i].x = VEC(v2,i) * 100; //increased spread
+      g->punkty[i].y = VEC(v3,i) * 100; //increased spread
+      //tymczasowo
+      printf("%d: %lf %lf\n",g->punkty[i].n,g->punkty[i].x, g->punkty[i].y);
     }
+    free_vec(v2);
+    free_vec(v3);
     clear_memory(A,P,cur2,nxt2,cur3,nxt3,ones,help_vec,Lap_w);
     if(converged2==0 || converged3==0)
         return 1;
     return 0;
 }
 
-int SpectralLayoutAlgorithm(graf g, pkt *punkty){
-
+int SpectralLayoutAlgorithm(graf *g){
+    verbose("Creating adjacency matrix.\n");
     Matrix *M = create_adjacency_matrix(g);
+    verbose("Creating degree vector.\n");
     Vector *V = create_degree_vector(M);
+    verbose("Creating laplacian matrix.\n");
     adjacency_to_laplacian_matrix(M,V);
-    int exit_code = reverse_power_iterations(M,punkty);
+    verbose("Executing reverse power iterations.\n");
+    int exit_code = reverse_power_iterations(M,g);
+    verbose("Freeing adjacency matrix and degree vector memory.\n");
     free_matrix(M);
     free_vec(V);
     if(exit_code==0){
-        verbose("Spectral layout algorithm ended successfully.\n");
+        verbose("Spectral layout algorithm finished succesfully.\n");
         return 0;
     }
     else if(exit_code==1){
-        fprintf(stderr, "Spectral layout did not converge. Results may be inacurate.\n");
+        verbose("Spectral layout did not converge. Results may be inacurate.\n");
         return 1;
     }
     else{

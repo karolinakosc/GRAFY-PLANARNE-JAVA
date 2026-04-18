@@ -24,8 +24,10 @@ typedef struct link {
 typedef struct graf {  
     pkt* punkty;  
     int l_pkt; 
+    int l_pkt_capacity;
     link* linki; 
     int l_l; 
+    int l_l_capacity;
 
 } graf; 
 

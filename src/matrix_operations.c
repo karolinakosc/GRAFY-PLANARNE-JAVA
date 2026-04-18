@@ -7,22 +7,21 @@
     TODO:
     -poprawic komentarze
     -optymalizacja
-    -byc moze zmiana metody
     -sprawdzenie poprawnosci
 */
 
-int get_max_vertex(graf g){
-    int max_vert = -1;
-    for(int i=0; i<g.l_pkt; i++)
-        max_vert = MAX(MAX(g.linki[i].a, g.linki[i].b), max_vert);
-    return max_vert;
+int find_index(graf *g, int vertex){
+  for(int i=0;i<g->l_pkt;i++)
+    if(g->punkty[i].n == vertex)
+      return i;
+  return -1;
 }
 
 int matrix_cpy(Matrix *dest, Matrix *source){
     if(!dest || !source)
         return -1;
     for(int i=0;i<dest->size * dest->size; i++)
-        source->data[i] = dest->data[i];
+        dest->data[i] = source->data[i];
     return 0;
 }
 
@@ -52,14 +51,24 @@ Vector *allocate_vector(int size){
     return V;
 }
 
-Matrix *create_adjacency_matrix(graf g){
-    int size = get_max_vertex(g)+1;
+Matrix *create_adjacency_matrix(graf *g){
+    int size = g->l_pkt;
     Matrix *adj = allocate_matrix(size);
-    for(int i=0; i<g.l_l; i++){
-        int a=g.linki[i].a;
-        int b=g.linki[i].b;
-        MAT(adj,a,b) = 1.0;
-        MAT(adj,b,a) = 1.0;
+    if(!adj){
+      fprintf(stderr,"Error while allocating adjacency matrix\n");
+      return NULL;
+    }
+    for(int i=0; i<g->l_l; i++){
+        int a=find_index(g, g->linki[i].a);
+        int b=find_index(g, g->linki[i].b);
+        if(a==-1 || b==-1){
+          fprintf(stderr,"Vertex not found.\n");
+          return NULL;
+        }
+        double weight = g->linki[i].waga;
+        printf("DEBUG: edge %d-%d waga=%lf\n",a,b,weight);
+        MAT(adj,a,b) = weight; //zmiana z sasiedztwa na wage
+        MAT(adj,b,a) = weight;
     }
     return adj;
 }
@@ -71,35 +80,36 @@ void free_matrix(Matrix *M){
 
 void free_vec(Vector *V){
     free(V->data);
-    fre(V);
+    free(V);
 }
 
 Vector* create_degree_vector(Matrix *M){
     Vector *degree_vector = allocate_vector(M->size);
     for(int i=0;i<M->size;i++){
         for(int j=0;j<M->size;j++){
-            if(MAT(M,i,j)==1)
-                VEC(degree_vector,i)++;
+          VEC(degree_vector,i) +=MAT(M,i,j);
         }
     }
     return degree_vector;
 }
 
-void adjacency_to_laplacian_matrix(Matrix* adj_matrix, Vector* deg_matrix){    //no new matrix in order to save memorhelp_vec and time
+void adjacency_to_laplacian_matrix(Matrix* adj_matrix, Vector* deg_matrix){    
 
     for(int i=0;i<adj_matrix->size;i++){
         for(int j=0;j<adj_matrix->size;j++){
             if(i==j)
                 MAT(adj_matrix,i,j) += VEC(deg_matrix,i);
-            else if(MAT(adj_matrix,i,j) == 1.0)
-                MAT(adj_matrix,i,j) = -1.0;
+            else if(MAT(adj_matrix,i,j) != 0.0)
+                MAT(adj_matrix,i,j) = -MAT(adj_matrix,i,j);
         }
     }
 }
 //LU matrix -> A = L * U
 //in order to save memory, L and U matrix are stored in A matrix
-void LU_decompose(Matrix *A, int *P){    //implementation of Gaussian  elimination in order to get LU matrix
+void LU_decompose(Matrix *A, int *P){    //implementation of Gaussian elimination in order to get LU matrix
     double *tmp_row = malloc(sizeof(double) * A->size);
+    if(!tmp_row)
+	    return;
     //searching for max_row in order to minimalize rounding errors
     for(int k=0; k<A->size; k++){
         int max_row = k;
@@ -118,8 +128,9 @@ void LU_decompose(Matrix *A, int *P){    //implementation of Gaussian  eliminati
             }
 
         }
-        if(is_zero(MAT(A,k,k)))               //check if A[k][k] ~ 0
+        if(is_zero(MAT(A,k,k))){               //check if A[k][k] ~ 0
             continue;
+        }
         for(int i=k+1; i<A->size; i++){            //Gaussian elimination - building LU matrix
             double factor = MAT(A,i,k) / MAT(A,k,k);  //A[i][k] elimination factor
             MAT(A,i,k) = factor;                   //to have L and U in one matrix store factor in eliminated position                  
@@ -127,6 +138,7 @@ void LU_decompose(Matrix *A, int *P){    //implementation of Gaussian  eliminati
                 MAT(A,i,j) -= factor * MAT(A,k,j);
         }
     }
+    free(tmp_row);
 }
 
 
