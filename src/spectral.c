@@ -188,7 +188,7 @@ int SpectralLayoutAlgorithm(graf *g){
         return 1;
     }
     else{
-        verbose("Error in reverse_power_iterations function.\n");
+        fprintf(stderr, "Error in spectral layout algorithm.\n");
         return -1;
     }
 }
