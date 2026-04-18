@@ -10,7 +10,7 @@ graf* create_graf (){
     graf* g = (graf*)malloc(sizeof(graf)); 
 
     if(!g){ 
-        fprintf(stderr, "Blad alokacji pamieci dla grafu.\n"); 
+        fprintf(stderr, "Failed to allocate memory for the graph.\n"); 
         return NULL; 
     }
 
@@ -24,7 +24,7 @@ graf* create_graf (){
     g->linki  = malloc(g->l_l_capacity * sizeof(link));
 
     if (!g->punkty || !g->linki) {
-        fprintf(stderr, "Blad alokacji tablic grafu.\n");
+        fprintf(stderr, "Failed to allocate memory for the graph arrays.\n");
         free(g->punkty);
         free(g->linki);
         free(g);
@@ -44,13 +44,13 @@ void free_graf(graf* g) {
 graf* load_graf(char* argv){ 
     FILE* in = fopen(argv, "r"); 
     if(in == NULL){ 
-        fprintf(stderr, "Blad otwarcia pliku.\n"); 
+        fprintf(stderr, "Failed to open input file: %s\n", argv); 
         return NULL; 
 
     }
     graf* g = create_graf();
     if (!g) { 
-        fprintf(stderr, "Blad tworzenia grafu.\n"); 
+        fprintf(stderr, "Failed to create graph.\n"); 
         fclose(in);
         return NULL; 
     }
@@ -64,7 +64,7 @@ graf* load_graf(char* argv){
         double waga; 
 
         if(sscanf(buf, "%49s %d %d %lf", name, &a, &b, &waga) != 4){ 
-            fprintf(stderr, "Blad odczytu linii pliku.\n"); 
+            fprintf(stderr, "Error while reading input file line.\n"); 
             free_graf(g);
             fclose(in);
             return NULL; 
@@ -72,20 +72,20 @@ graf* load_graf(char* argv){
 
         if(find_pkt(g, a) == -1)
             if(add_pkt(g, a) == -1) {
-                fprintf(stderr, "Blad dodawania punktu.\n");
+                fprintf(stderr, "Failed to add point.\n");
                 free_graf(g);
                 fclose(in);
                 return NULL;
             }
         if(find_pkt(g, b) == -1)
             if(add_pkt(g, b) == -1) {
-                fprintf(stderr, "Blad dodawania punktu.\n");
+                fprintf(stderr, "Failed to add point.\n");
                 free_graf(g);
                 fclose(in);
                 return NULL;
             }
         if(add_link(g, name, a, b, waga) == -1) {
-            fprintf(stderr, "Blad dodawania linku.\n");
+            fprintf(stderr, "Failed to add link.\n");
             free_graf(g);
             fclose(in);
             return NULL;
@@ -108,7 +108,7 @@ int add_link(graf* g, const char* name, int a, int b, double waga) {
     if(g->l_l >= g->l_l_capacity) {
       link *l = realloc(g->linki, 2 * g->l_l_capacity * sizeof(link));
       if (!l) {
-        fprintf(stderr, "Blad alokacji linki\n");
+        fprintf(stderr, "Failed to allocate link.\n");
         return -1;
       }
       g->linki = l;
@@ -128,7 +128,7 @@ int add_pkt(graf* g, int n) {
     if(g->l_pkt >= g->l_pkt_capacity){
       pkt* p = realloc(g->punkty, 2 * g->l_pkt_capacity * sizeof(pkt));
       if (!p) {
-        fprintf(stderr, "Blad alokacji punktu\n");
+        fprintf(stderr, "Failed to allocate point.\n");
         return -1;
       }
       g->punkty = p;

@@ -133,6 +133,7 @@ int reverse_power_iterations(Matrix *matrix, graf *g){
     Vector *v2 = allocate_vector(size);
     for(int i=0;i<size;i++)
       VEC(v2,i) = VEC(cur2,i);
+    verbose("Finished computing X coordinates.\n");
 
 //usuniecie v2
     prepare_current_vector(A,matrix,P,cur3,ones,v2,lambda2);
@@ -149,15 +150,14 @@ int reverse_power_iterations(Matrix *matrix, graf *g){
         }
     }
     Vector *v3 = allocate_vector(size);
-
     for(int i=0;i<size;i++)
       VEC(v3,i) = VEC(cur3,i);
+    verbose("Finished computing Y coordinates.\n");
+
     //x and y coordinates - P(x[i],y[i]) is point of i-vertex
     for(int i=0; i<v2->size; i++){
       g->punkty[i].x = VEC(v2,i) * 100; //increased spread
       g->punkty[i].y = VEC(v3,i) * 100; //increased spread
-      //tymczasowo
-      printf("%d: %lf %lf\n",g->punkty[i].n,g->punkty[i].x, g->punkty[i].y);
     }
     free_vec(v2);
     free_vec(v3);
@@ -176,7 +176,7 @@ int SpectralLayoutAlgorithm(graf *g){
     adjacency_to_laplacian_matrix(M,V);
     verbose("Executing reverse power iterations.\n");
     int exit_code = reverse_power_iterations(M,g);
-    verbose("Freeing adjacency matrix and degree vector memory.\n");
+    verbose("Freeing memory allocated for spectral layout algorithm.\n");
     free_matrix(M);
     free_vec(V);
     if(exit_code==0){
@@ -188,7 +188,9 @@ int SpectralLayoutAlgorithm(graf *g){
         return 1;
     }
     else{
-        fprintf(stderr, "Error in spectral layout algorithm.\n");
+<<<<<<<
+=======
+>>>>>>> cd7a894 (feat: add .gitingnore, fix: english output)
         return -1;
     }
 }
