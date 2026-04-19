@@ -35,7 +35,7 @@ for (int j = 2; j < argc; j++) { //wczytywanie z flagami
         verbose_activate();
     }
     if (strcmp(argv[j], "-h") == 0) { //tryb help
-        return 1;
+        help();
     }
     if (strcmp(argv[j], "-a") == 0) { //zmiana na inny algorytm
         j++;
