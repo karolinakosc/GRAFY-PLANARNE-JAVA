@@ -30,9 +30,9 @@ int write_coordinates(FILE *out, graf *g){
     tmp_punkty[i].n = g->punkty[i].n;
   }
   qsort(tmp_punkty, g->l_pkt, sizeof(pkt), cmp_pkt);
-  fprintf(out,"<vertex_number> <x_cooridnates> <y_coordinates>\n");
   for(int i=0;i<g->l_pkt;i++)
     fprintf(out,"%d %lf %lf\n",tmp_punkty[i].n, tmp_punkty[i].x, tmp_punkty[i].y);
+
   free(tmp_punkty);
   return 0;
 }
@@ -47,6 +47,7 @@ int main(int argc, char** argv)
 
   graf *g = load_graf(argv[1]); //wczytanie pliku z grafem
   if(!g){
+    help();
     return -1;
   }
   char a[50] = "triangulation"; //Bazowo bez podania flagi argumentu bedzie triangulacja
