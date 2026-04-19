@@ -127,8 +127,8 @@ void triangulation(graf* g, char* out){
 }
 
 void switch_pkt(graf* g, int m){
-  int tmpx = g->punkty[m].x;
-  int tmpy = g->punkty[m].y;
+  double tmpx = g->punkty[m].x;
+  double tmpy = g->punkty[m].y;
   g->punkty[m].x = g->punkty[m].op_x;
   g->punkty[m].y = g->punkty[m].op_y;
   g->punkty[m].op_x = tmpx;
