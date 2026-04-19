@@ -137,7 +137,7 @@ void switch_pkt(graf* g, int m){
 
 int find_pkt_pos(graf* g, double x, double y, int n){
   for(int i = 0; i < g->l_pkt; i++){
-    if(g->punkty[i].x == x && g->punkty[i].y == y && g->punkty[n].n != n)
+    if(g->punkty[i].x == x && g->punkty[i].y == y && g->punkty[i].n != n)
       return g->punkty[i].n;
   }
   return -1;
