@@ -120,7 +120,10 @@ void triangulation(graf* g, char* out){
       else m++;
     }
   }
-  if(m <= 3) fprintf(stderr, "Graph is not planar!\n");
+  if(m <= 3){
+    fprintf(stderr, "Graph is not planar!\n");
+    return;
+  }
   for(int i = 0; i < g->l_pkt; i++)
   	zapisz(out, g->punkty[i].x, g->punkty[i].y);
   
