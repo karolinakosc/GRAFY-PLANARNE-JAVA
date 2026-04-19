@@ -58,7 +58,7 @@ int main(int argc, char** argv)
   if(checkPlanar(g)==-1)
     fprintf(stderr,"Graph is not planar.\n");
   if(strcmp(a, "triangulation") == 0){
-    triangulation(g, argc[0]);
+    triangulation(g, argv[0]);
   }
   if (strcmp(a,"spectral") == 0){
     if(SpectralLayoutAlgorithm(g)==-1) {
