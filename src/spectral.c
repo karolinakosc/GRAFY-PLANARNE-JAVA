@@ -188,9 +188,6 @@ int SpectralLayoutAlgorithm(graf *g){
         return 1;
     }
     else{
-<<<<<<<
-=======
->>>>>>> cd7a894 (feat: add .gitingnore, fix: english output)
         return -1;
     }
 }

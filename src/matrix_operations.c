@@ -3,13 +3,6 @@
 #include <math.h>
 #include "utlis.h"
 
-/*
-    TODO:
-    -poprawic komentarze
-    -optymalizacja
-    -sprawdzenie poprawnosci
-*/
-
 int find_index(graf *g, int vertex){
   for(int i=0;i<g->l_pkt;i++)
     if(g->punkty[i].n == vertex)
@@ -98,7 +91,7 @@ void adjacency_to_laplacian_matrix(Matrix* adj_matrix, Vector* deg_matrix){
         for(int j=0;j<adj_matrix->size;j++){
             if(i==j)
                 MAT(adj_matrix,i,j) += VEC(deg_matrix,i);
-            else if(MAT(adj_matrix,i,j) != 0.0)
+            else 
                 MAT(adj_matrix,i,j) = -MAT(adj_matrix,i,j);
         }
     }

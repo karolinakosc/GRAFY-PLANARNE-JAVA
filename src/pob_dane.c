@@ -40,11 +40,7 @@ for (int j = 2; j < argc; j++) { //wczytywanie z flagami
     if (strcmp(argv[j], "-a") == 0) { //zmiana na inny algorytm
         j++;
         if (j < argc){
-            if(sscanf(argv[j], "%49s", a) != 1) {
-              fprintf(stderr,"Wrong argument for -a\n");
-              return 1;
-            }
-            if(find_algorithm(a)!=0){
+            if(sscanf(argv[j], "%49s", a) != 1 && find_algorithm(a)!=0) {
               fprintf(stderr,"Unknown algorithm name: -a %s\n", a);
               return 1;
             }
