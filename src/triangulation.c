@@ -5,6 +5,7 @@
 #include "triangulation.h"
 #include "graf.h"
 #include "log.h"
+#include "zapis.h"
 
 double odl (double x1, double y1, double x2, double y2) { //odleglosc punktow od siebie
   double dl = sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
@@ -36,10 +37,12 @@ void check(graf* g, int a, int b, int c, int ac, int bc){ //obliczenie punktow p
   g->punkty[c].y = y1f;
   g->punkty[c].op_x = x2f;
   g->punkty[c].op_y = y2f;
-  verbose("Initial coordinate options for point %d: x = %lf, y = %lf, op_x = %lf, op_y = %lf\n", c, x1f, y1f, x2f, y2f);
+  char msg[256];
+  snprintf(msg, sizeof(msg), "Initial coordinate options for point %d: x = %lf, y = %lf, op_x = %lf, op_y = %lf\n", c, x1f, y1f, x2f, y2f);
+  verbose(msg);
 }
 
-void triangulation(graf* g){
+void triangulation(graf* g, char* out){
   g->punkty[g->linki[0].b].x = g->linki[0].waga;
   g->punkty[g->linki[0].a].known = 1;
   g->punkty[g->linki[0].b].known = 1;
@@ -92,7 +95,9 @@ void triangulation(graf* g){
 
       if(s != -1 && t != -1 && sr != -1 && tr != -1){
         check(g, s, t, r, sr, tr);
-        verbose("Checking coordinates for point %d, connected with point %d and %d, by links %s and %s", r, s, t, g->linki[sr].name, g->linki[tr].name);
+        char msg[256];
+        snprintf(msg, sizeof(msg), "Checking coordinates for point %d, connected with point %d and %d, by links %s and %s", r, s, t, g->linki[sr].name, g->linki[tr].name);
+        verbose(msg);
         g->punkty[r].known = 1;
         changed = 1;
         break;
@@ -100,7 +105,6 @@ void triangulation(graf* g){
     }
   }
 
-  //wybór punktów!!!
   int m = 3;
   while(m < g->l_pkt && m >= 3){
     if(find_pkt_pos(g, g->punkty[m].x, g->punkty[m].y, m) == -1){
@@ -117,6 +121,8 @@ void triangulation(graf* g){
     }
   }
   if(m <= 3) fprintf(stderr, "Graph is not planar!\n");
+  for(int i = 0; i < g->l_pkt; i++)
+  	zapisz(out, g->punkty[i].x, g->punkty[i].y);
   
 }
 
