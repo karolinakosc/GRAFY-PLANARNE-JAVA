@@ -4,6 +4,7 @@
 #include <math.h>
 #include "triangulation.h"
 #include "graf.h"
+#include "log.h"
 
 double odl (double x1, double y1, double x2, double y2) { //odleglosc punktow od siebie
   double dl = sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
