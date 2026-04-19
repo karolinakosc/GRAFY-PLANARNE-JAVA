@@ -8,6 +8,7 @@
 #include "graf.h"
 #include "spectral.h"
 #include "planar.h"
+#include "triangulation.h"
 
 int cmp_pkt(const void *a, const void *b){
     const pkt *pa = (const pkt *)a;
@@ -49,14 +50,17 @@ int main(int argc, char** argv)
     help();
     return -1;
   }
-  char a[50] = "triangulacja"; //Bazowo bez podania flagi argumentu bedzie triangulacja
+  char a[50] = "triangulation"; //Bazowo bez podania flagi argumentu bedzie triangulacja
   FILE* out = stdout;
   if (pobierz_dane(argc, argv, a, &out) != 0) {
         help();
         return 2;
   }
   if(checkPlanar(g)==-1)
-    fprintf(stderr,"The graph is not planar.\n");
+    fprintf(stderr,"Graph is not planar.\n");
+  if(strcmp(a, "triangulation") == 0){
+    triangulation(g, argv[0]);
+  }
   if (strcmp(a,"spectral") == 0){
     if(SpectralLayoutAlgorithm(g)==-1) {
       fprintf(stderr,"Error in spectral layout algorithm.\n");

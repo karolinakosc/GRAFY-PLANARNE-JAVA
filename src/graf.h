@@ -11,6 +11,7 @@ typedef struct pkt {
     double op_x; 
     double y; 
     double op_y; 
+    int known;
     int n;  
 } pkt;  
 

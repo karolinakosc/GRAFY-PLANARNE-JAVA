@@ -134,7 +134,7 @@ int add_pkt(graf* g, int n) {
       g->punkty = p;
       g->l_pkt_capacity *= 2;
     }
-    g->punkty[g->l_pkt] = (pkt){0, 0, 0, 0, n}; 
+    g->punkty[g->l_pkt] = (pkt){0, 0, 0, 0, 0, n}; 
 
     g->l_pkt++; 
     return 0;
