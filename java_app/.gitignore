@@ -1,0 +1,11 @@
+# --- Ustawienia IntelliJ IDEA ---
+.idea/
+*.iml
+*.xml
+*.iws
+*.ipr
+
+# --- Skompilowany kod Java ---
+out/
+bin/
+*.class
