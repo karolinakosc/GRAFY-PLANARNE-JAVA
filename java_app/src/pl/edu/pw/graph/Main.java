@@ -47,7 +47,6 @@ public class Main {
             if (result == JFileChooser.APPROVE_OPTION) {
                 currentFile[0] = fileChooser.getSelectedFile();
                 try {
-                    // Używamy FileParsera Karoliny do wczytania struktury
                     currentGraph[0] = FileParser.parseInputGraph(currentFile[0].getAbsolutePath());
                     canvasPanel.setGraph(currentGraph[0]); // Dajemy graf do panelu
                     canvasPanel.repaint();
@@ -58,6 +57,7 @@ public class Main {
                 }
             }
         });
+
 
         btnGenerate.addActionListener(e -> {
             if (currentFile[0] == null) {
@@ -71,7 +71,9 @@ public class Main {
             logArea.append("[WORK] Uruchamiam silnik C...\n");
 
             try {
-                ProcessExecutor.runCEngine("./c_app/program", currentFile[0].getAbsolutePath(), algoParam);
+                File oldResult = new File("./c_app/wynik.txt");
+                if (oldResult.exists()) oldResult.delete(); // Usuwamy śmieci po poprzednim razie
+                ProcessExecutor.runCEngine("./c_app/program", "./c_app/" + currentFile[0].getName(), algoParam);
 
                 FileParser.updateGraphWithCoordinates(currentGraph[0], "./c_app/wynik.txt");
 

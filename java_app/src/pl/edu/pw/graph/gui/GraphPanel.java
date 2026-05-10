@@ -10,7 +10,7 @@ import java.awt.*;
 public class GraphPanel extends JPanel {
 
     private Graph graph;
-
+    private double scale = 50.0;
     public GraphPanel() {
         setBackground(Color.WHITE);
     }
@@ -29,7 +29,7 @@ public class GraphPanel extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        int scale = 150;
+
         int offsetX = getWidth() / 2;
         int offsetY = getHeight() / 2;
 
@@ -49,6 +49,7 @@ public class GraphPanel extends JPanel {
 
         int radius = 10;
         for (Vertex v : graph.getVertices()) {
+            System.out.println("Rysuję wierzchołek " + v.getId() + " na: " + v.getX() + ", " + v.getY());
 
             int drawX = (int) (v.getX() * scale) + offsetX;
             int drawY = (int) (v.getY() * scale) + offsetY;
