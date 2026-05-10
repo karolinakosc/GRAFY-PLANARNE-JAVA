@@ -1,31 +1,43 @@
 package pl.edu.pw.graph.algorithms;
 
 import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class ProcessExecutor {
 
-    public static void runCEngine(String executablePath, String inputFilePath, String algorithm) {
-        try {
-            // Komenda uruchomienia: ./graf plik.txt -a algorithm -v
-            ProcessBuilder pb = new ProcessBuilder(executablePath, inputFilePath, "-a", algorithm, "-v");
+    public static void runCEngine(String executablePath, String inputFilePath, String algorithm)
+            throws IOException, InterruptedException, TimeoutException {
 
-            pb.redirectErrorStream(true);
+        // Komenda uruchomienia: ./graf plik.txt -a algorithm -v
+        ProcessBuilder pb = new ProcessBuilder(executablePath, inputFilePath, "-a", algorithm, "-v");
+        pb.redirectErrorStream(true);
 
-            Process process = pb.start();
+        Process process = pb.start();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println("[Silnik C]: " + line);
+        new Thread(() -> {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    System.out.println("[Silnik C]: " + line);
+                }
+            } catch (IOException ignored) {
             }
+        }).start();
 
-            int exitCode = process.waitFor();
-            System.out.println("Proces zakończył działanie z kodem błędu: " + exitCode);
+        //oczekujemy maksymalnie 10 sekund na wynik
+        boolean finished = process.waitFor(10, TimeUnit.SECONDS);
 
-        } catch (IOException | InterruptedException e) {
-            System.err.println("Błąd podczas komunikacji z procesem w C: " + e.getMessage());
+        if (!finished) {
+            process.destroy();
+            throw new TimeoutException("Przekroczono limit czasu. Silnik obliczeniowy zawiesił się w nieskończonej pętli i został zatrzymany.");
+        }
+
+        int exitCode = process.exitValue();
+        if (exitCode != 0) {
+            throw new RuntimeException("Wystąpił błąd silnika obliczeniowego (kod powrotu: " + exitCode + "). Sprawdź logi lub poprawność danych wejściowych.");
         }
     }
 }
