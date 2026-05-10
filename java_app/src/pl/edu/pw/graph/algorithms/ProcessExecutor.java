@@ -12,7 +12,7 @@ public class ProcessExecutor {
             throws IOException, InterruptedException, TimeoutException {
 
         // Komenda uruchomienia: ./graf plik.txt -a algorithm -v
-        ProcessBuilder pb = new ProcessBuilder(executablePath, inputFilePath, "-a", algorithm, "-v");
+        ProcessBuilder pb = new ProcessBuilder(executablePath, inputFilePath, "-a", algorithm, "-v", "-w", "./c_app/wynik.txt");
         pb.redirectErrorStream(true);
 
         Process process = pb.start();
