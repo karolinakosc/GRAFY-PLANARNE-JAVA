@@ -4,6 +4,9 @@ import pl.edu.pw.graph.gui.GraphPanel;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import pl.edu.pw.graph.model.Graph;
+import pl.edu.pw.graph.io.FileParser;
+import pl.edu.pw.graph.algorithms.ProcessExecutor;
 
 public class Main {
     public static void main(String[] args) {
@@ -34,54 +37,51 @@ public class Main {
 
         GraphPanel canvasPanel = new GraphPanel();
 
+        final File[] currentFile = {null};
+        final Graph[] currentGraph = {null};
+
         btnLoad.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             int result = fileChooser.showOpenDialog(frame);
 
             if (result == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = fileChooser.getSelectedFile();
-                logArea.append("[INFO] Wczytano plik: " + selectedFile.getAbsolutePath() + "\n");
+                currentFile[0] = fileChooser.getSelectedFile();
+                try {
+                    // Używamy FileParsera Karoliny do wczytania struktury
+                    currentGraph[0] = FileParser.parseInputGraph(currentFile[0].getAbsolutePath());
+                    canvasPanel.setGraph(currentGraph[0]); // Dajemy graf do panelu
+                    canvasPanel.repaint();
 
-            } else {
-                logArea.append("[INFO] Anulowano wybór pliku.\n");
+                    logArea.append("[INFO] Wczytano strukturę: " + currentFile[0].getName() + "\n");
+                } catch (Exception ex) {
+                    logArea.append("[ERROR] Błąd parsowania: " + ex.getMessage() + "\n");
+                }
             }
         });
 
         btnGenerate.addActionListener(e -> {
+            if (currentFile[0] == null) {
+                JOptionPane.showMessageDialog(frame, "Najpierw wczytaj plik!");
+                return;
+            }
+
             String selectedAlgo = (String) comboAlgorithm.getSelectedItem();
-            logArea.append("[WORK] Uruchamiam " + selectedAlgo + " w silniku C...\n");
+            String algoParam = selectedAlgo.contains("Spektralny") ? "spectral" : "triangulation";
 
-            int resultCode = 0;
+            logArea.append("[WORK] Uruchamiam silnik C...\n");
 
-            //okienka JOPTIONPANE
-            if (resultCode == 0) {
+            try {
+                ProcessExecutor.runCEngine("./c_app/program", currentFile[0].getAbsolutePath(), algoParam);
+
+                FileParser.updateGraphWithCoordinates(currentGraph[0], "./c_app/wynik.txt");
+
                 canvasPanel.repaint();
-                JOptionPane.showMessageDialog(frame,
-                        "Graf został wygenerowany pomyślnie!",
-                        "Sukces",
-                        JOptionPane.INFORMATION_MESSAGE);
-                logArea.append("[INFO] Obliczenia zakończone sukcesem.\n");
-            }
-            else if (resultCode == 1 || resultCode == 2) {
-                JOptionPane.showMessageDialog(frame,
-                        "Błąd dostępu do danych! Upewnij się, że plik wejściowy jest poprawny.",
-                        "Błąd Pliku",
-                        JOptionPane.ERROR_MESSAGE);
-                logArea.append("[ERROR] Zły plik wejściowy lub argumenty.\n");
-            }
-            else if (resultCode == 3) {
-                JOptionPane.showMessageDialog(frame,
-                        "Niepoprawna struktura grafu! Silnik nie mógł przetworzyć danych.",
-                        "Błąd Grafu",
-                        JOptionPane.WARNING_MESSAGE);
-                logArea.append("[ERROR] Struktura grafu została odrzucona przez silnik C.\n");
-            }
-            else if (resultCode == -1) {
-                JOptionPane.showMessageDialog(frame,
-                        "Krytyczny błąd silnika obliczeniowego! Operacja została przerwana, aby zapobiec zawieszeniu programu.",
-                        "Awaria Silnika",
-                        JOptionPane.ERROR_MESSAGE);
-                logArea.append("[FATAL] Proces C został wymuszony do zamknięcia (Timeout).\n");
+                JOptionPane.showMessageDialog(frame, "Graf wygenerowany pomyślnie!");
+                logArea.append("[INFO] Obliczenia zakończone.\n");
+
+            } catch (Exception ex) {
+                logArea.append("[ERROR] Coś poszło nie tak: " + ex.getMessage() + "\n");
+                JOptionPane.showMessageDialog(frame, "Błąd: " + ex.getMessage(), "Błąd silnika", JOptionPane.ERROR_MESSAGE);
             }
         });
 
