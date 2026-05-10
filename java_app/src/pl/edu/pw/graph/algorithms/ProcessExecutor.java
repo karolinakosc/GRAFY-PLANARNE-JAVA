@@ -11,8 +11,7 @@ public class ProcessExecutor {
     public static void runCEngine(String executablePath, String inputFilePath, String algorithm)
             throws IOException, InterruptedException, TimeoutException {
 
-        // Komenda uruchomienia: ./graf plik.txt -a algorithm -v
-        ProcessBuilder pb = new ProcessBuilder(executablePath, inputFilePath, "-a", algorithm, "-v", "-w", "./c_app/wynik.txt");
+        ProcessBuilder pb = new ProcessBuilder("wsl", executablePath, inputFilePath, "-a", algorithm, "-v", "-w", "./c_app/wynik.txt");
         pb.redirectErrorStream(true);
 
         Process process = pb.start();
